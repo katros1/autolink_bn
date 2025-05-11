@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Welcome Email</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet"/>
+</head>
+<body style="font-family: 'Lato', sans-serif; background-color: #FCFCFC; padding: 20px;">
+<img src="https://res.cloudinary.com/dboqnapgi/image/upload/v1741085296/1_ghhn3m.png" alt="logo"/>
+<div style="max-width: 600px; margin: auto; background: #FFFFFF; border: 1px solid #E0E0E0; border-radius: 8px; padding: 20px;">
+    <h1 style="font-size: 17px; color: #3D3D3D;">Dear <span th:text="${name}">[Name]</span>,</h1>
+    <p>Welcome to AutoLink! Your account has been successfully created. You can now explore
+        opportunities, manage your profile, and connect with top institutions.</p>
+    <p>To get started, please use below verification code to verify your email:</p>
+    <ul style="list-style: none; padding: 0;">
+    </ul>
+    <ul class="details-list">
+        <li><span style="color: #52F162" th:text="${otp}">[OTP]</span></li>
+    </ul>
+    <p>If you did not create this account, please ignore this email.</p>
+    <p>Best regards,<br/>AutoLink support team</p>
+</div>
+</body>
+</html>,
