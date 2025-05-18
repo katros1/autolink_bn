@@ -21,8 +21,8 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/autolink_bn:latest .
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/autolink_bn:latest
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/autolink-bn:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/autolink-bn:latest
 
   deploy:
     needs: build_and_push
