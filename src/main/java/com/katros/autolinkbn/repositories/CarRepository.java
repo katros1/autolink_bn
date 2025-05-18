@@ -28,5 +28,9 @@ public interface CarRepository extends MongoRepository<Car, String> {
     Page<Car> findByForSaleTrueAndBodyTypeIgnoreCase(String bodyType, Pageable pageable);
     Page<Car> findByForSaleTrueAndTitleContainingIgnoreCaseAndBodyTypeIgnoreCase(String title, String bodyType, Pageable pageable);
 
+    long countByIsAvailable(boolean available);
+    long countByForRentTrue();
+    long countByForSaleTrue();
+
 
 }

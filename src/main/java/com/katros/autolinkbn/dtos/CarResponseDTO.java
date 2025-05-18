@@ -1,5 +1,6 @@
 package com.katros.autolinkbn.dtos;
 
+import com.katros.autolinkbn.entities.Rating;
 import com.katros.autolinkbn.enums.CarStatus;
 import lombok.Data;
 
@@ -12,7 +13,8 @@ import java.util.List;
 public class CarResponseDTO {
     private String id;
     private String ownerId;
-
+    private String ownerName;
+    private String ownerPhoneNumber;
     private String title;
     private String description;
     private String brand;
@@ -41,6 +43,8 @@ public class CarResponseDTO {
 
     private boolean isAvailable;
     private CarStatus status;
+
+    private List<Rating> ratings;
 
     private double averageRating;
     private int totalRatings;

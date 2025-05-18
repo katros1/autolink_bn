@@ -62,6 +62,7 @@ public class AuthController {
                     .firstName(account.getFirstName())
                     .lastName(account.getLastName())
                     .email(account.getEmail())
+                    .phoneNumber(account.getPhoneNumber())
                     .role(roles)
                     .profilePicture(account.getProfilePicUrl())
                     .isVerified(account.isVerified())

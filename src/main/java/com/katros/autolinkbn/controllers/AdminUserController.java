@@ -1,9 +1,11 @@
 package com.katros.autolinkbn.controllers;
 
+import com.katros.autolinkbn.dtos.AdminDashboardStatsDTO;
 import com.katros.autolinkbn.dtos.PaginatedResponse;
 import com.katros.autolinkbn.entities.User;
 import com.katros.autolinkbn.enums.Role;
 import com.katros.autolinkbn.exceptions.NotFoundException;
+import com.katros.autolinkbn.services.AdminDashboardService;
 import com.katros.autolinkbn.services.UserService;
 import com.katros.autolinkbn.utils.CustomResponse;
 import org.springframework.data.domain.Page;
@@ -18,17 +20,19 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/v1/admin/users")
+@RequestMapping("/api/v1/admin")
 @PreAuthorize("hasAuthority('ADMIN')")
 public class AdminUserController {
 
     private final UserService userService;
+    private final AdminDashboardService dashboardService;
 
-    public AdminUserController(UserService userService) {
+    public AdminUserController(UserService userService, AdminDashboardService dashboardService) {
         this.userService = userService;
+        this.dashboardService = dashboardService;
     }
 
-    @GetMapping
+    @GetMapping("/users")
     public ResponseEntity<CustomResponse<PaginatedResponse<User>>> getAllUsers(
             @RequestParam Optional<Role> role,
             @RequestParam(defaultValue = "0") int page,
@@ -47,23 +51,28 @@ public class AdminUserController {
         return ResponseEntity.ok(CustomResponse.successResponse("Users fetched successfully", HttpStatus.OK.value(), response));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/users/{id}")
     public ResponseEntity<CustomResponse<User>> getUserById(@PathVariable String id) {
         User user = userService.getUserById(id)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + id));
         return ResponseEntity.ok(CustomResponse.successResponse("User fetched successfully", HttpStatus.OK.value(), user));
     }
 
-    @PatchMapping("/{id}/deactivate")
+    @PutMapping("/users/{id}/deactivate")
     public ResponseEntity<CustomResponse<User>> deactivateUser(@PathVariable String id) {
         User updatedUser = userService.deactivateUser(id);
         return ResponseEntity.ok(CustomResponse.successResponse("User deactivated successfully", HttpStatus.OK.value(), updatedUser));
     }
 
-    @PatchMapping("/{id}/activate")
+    @PutMapping("/users/{id}/activate")
     public ResponseEntity<CustomResponse<User>> activateUser(@PathVariable String id) {
         User updatedUser = userService.activateUser(id);
         return ResponseEntity.ok(CustomResponse.successResponse("User activated successfully", HttpStatus.OK.value(), updatedUser));
     }
-}
 
+    @GetMapping("/dashboard")
+    public ResponseEntity<CustomResponse<AdminDashboardStatsDTO>> getDashboardStats() {
+        AdminDashboardStatsDTO stats = dashboardService.getDashboardStats();
+        return ResponseEntity.ok(CustomResponse.successResponse("Dashboard stats fetched", HttpStatus.OK.value(), stats));
+    }
+}

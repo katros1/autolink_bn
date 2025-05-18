@@ -2,14 +2,18 @@ package com.katros.autolinkbn.services;
 
 import com.katros.autolinkbn.dtos.BookingRequestDTO;
 import com.katros.autolinkbn.dtos.BookingResponseDTO;
+import com.katros.autolinkbn.dtos.GetBookingsMadeByRenterDTO;
+import com.katros.autolinkbn.dtos.GetMadeOwnerCarsDTO;
 import com.katros.autolinkbn.entities.Booking;
 import com.katros.autolinkbn.entities.Car;
+import com.katros.autolinkbn.entities.User;
 import com.katros.autolinkbn.enums.BookingStatus;
 import com.katros.autolinkbn.exceptions.BadRequestException;
 import com.katros.autolinkbn.exceptions.ForbiddenException;
 import com.katros.autolinkbn.exceptions.NotFoundException;
 import com.katros.autolinkbn.repositories.BookingRepository;
 import com.katros.autolinkbn.repositories.CarRepository;
+import com.katros.autolinkbn.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,6 +24,7 @@ import java.util.stream.Collectors;
 public class BookingService {
 
     private final BookingRepository bookingRepository;
+    private final UserRepository userRepository;
 
     private final CarService carService;
 
@@ -27,8 +32,9 @@ public class BookingService {
 
     private final CarRepository carRepository;
 
-    public BookingService(BookingRepository bookingRepository, CarService carService, NotificationService notificationService, CarRepository carRepository) {
+    public BookingService(BookingRepository bookingRepository, UserRepository userRepository, CarService carService, NotificationService notificationService, CarRepository carRepository) {
         this.bookingRepository = bookingRepository;
+        this.userRepository = userRepository;
         this.carService = carService;
         this.notificationService = notificationService;
         this.carRepository = carRepository;
@@ -69,14 +75,68 @@ public class BookingService {
                 "Your booking for car '" + car.getTitle() + "' has been approved!");
     }
 
-    public List<Booking> getBookingsForOwner(String ownerId) {
+    public List<GetMadeOwnerCarsDTO> getBookingsForOwner(String ownerId) {
 
         List<Car> ownerCars = carRepository.findByOwnerId(ownerId);
 
 
         List<String> carIds = ownerCars.stream().map(Car::getId).toList();
 
-        return bookingRepository.findByCarIdIn(carIds);
+        List<Booking> bookingsMade = bookingRepository.findByCarIdIn(carIds);
+
+        return bookingsMade.stream().map(booking -> {
+
+            User user = userRepository.findById(booking.getRenterId()).get();
+            Car car = carService.getCarById(booking.getCarId());
+
+            return new GetMadeOwnerCarsDTO(
+                    booking.getCarId(),
+                    car.getTitle(),
+                    car.getCoverImageUrl(),
+                    booking.getRenterId(),
+                    user.getLastName() + " " + user.getFirstName(),
+                    user.getProfilePicUrl(),
+                    user.getPhoneNumber(),
+                    user.getEmail(),
+                    user.getCountry(),
+                    booking.getId(),
+                    booking.getCreatedAt(),
+                    booking.getStatus(),
+                    booking.getStartDate(),
+                    booking.getEndDate(),
+                    car.getRentalPricePerDay()
+            );
+        }).toList();
+    }
+
+    public List<GetBookingsMadeByRenterDTO> getBookingsMadeByRenter(String renterId) {
+        List<Booking> bookings = bookingRepository.findByRenterId(renterId);
+
+        return bookings.stream().map(booking -> {
+            Car car = carRepository.findById(booking.getCarId())
+                    .orElseThrow(() -> new NotFoundException("Car not found with id: " + booking.getCarId()));
+
+            User owner = userRepository.findById(car.getOwnerId())
+                    .orElseThrow(() -> new NotFoundException("Owner not found with id: " + car.getOwnerId()));
+
+            return new GetBookingsMadeByRenterDTO(
+                    car.getId(),
+                    car.getTitle(),
+                    car.getCoverImageUrl(),
+                    owner.getUserId(),
+                    owner.getFirstName() + " " + owner.getLastName(),
+                    owner.getProfilePicUrl(),
+                    owner.getPhoneNumber(),
+                    owner.getEmail(),
+                    owner.getCountry(),
+                    booking.getId(),
+                    booking.getCreatedAt(),
+                    booking.getStatus(),
+                    booking.getStartDate(),
+                    booking.getEndDate(),
+                    car.getRentalPricePerDay()
+            );
+        }).toList();
     }
 
     public void cancelBooking(String bookingId, String userId) {

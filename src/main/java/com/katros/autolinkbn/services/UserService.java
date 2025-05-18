@@ -282,8 +282,15 @@ public class UserService {
     public List<RoleChangeRequestDTO> getRoleChangeRequest() {
         List<RoleChangeRequest> pendingRequests = roleChangeRequestRepository.findByStatus(RequestStatus.PENDING);
         return pendingRequests.stream()
-                .map(request -> new RoleChangeRequestDTO(request.getId(), request.getUser().getEmail(),
-                        request.getRequestedRole(), request.getStatus()))
+                .map(request -> new RoleChangeRequestDTO(
+                        request.getId(),
+                        request.getUser().getLastName() +
+                                request.getUser().getFirstName(),
+                        request.getUser().getEmail(),
+                        request.getUser().getProfilePicUrl(),
+                        request.getRequestedRole(),
+                        request.getStatus()
+                ))
                 .collect(Collectors.toList());
     }
 

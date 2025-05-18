@@ -9,7 +9,9 @@ import lombok.Data;
 @AllArgsConstructor
 public class RoleChangeRequestDTO {
     private String requestId;
+    private String names;
     private String userEmail;
+    private String profilePic;
     private Role requestedRole;
     private RequestStatus status;
 }

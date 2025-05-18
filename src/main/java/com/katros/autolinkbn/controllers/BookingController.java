@@ -1,16 +1,13 @@
 package com.katros.autolinkbn.controllers;
 
 import com.katros.autolinkbn.dtos.BookingRequestDTO;
-import com.katros.autolinkbn.dtos.BookingResponseDTO;
-import com.katros.autolinkbn.entities.Booking;
-import com.katros.autolinkbn.entities.User;
+import com.katros.autolinkbn.dtos.GetBookingsMadeByRenterDTO;
+import com.katros.autolinkbn.dtos.GetMadeOwnerCarsDTO;
 import com.katros.autolinkbn.services.BookingService;
-import com.katros.autolinkbn.services.UserService;
 import com.katros.autolinkbn.utils.CustomResponse;
 import com.katros.autolinkbn.utils.JwtHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -58,9 +55,19 @@ public class BookingController {
 
     @GetMapping("/owner")
     @PreAuthorize("hasAuthority('OWNER')")
-    public ResponseEntity<CustomResponse<List<Booking>>> getBookingsForCarOwner(HttpServletRequest request) {
+    public ResponseEntity<CustomResponse<List<GetMadeOwnerCarsDTO>>> getBookingsForCarOwner(HttpServletRequest request) {
         String ownerId = jwtHandler.extractUserId(request.getHeader("Authorization").split(" ")[1]);
-        List<Booking> bookings = bookingService.getBookingsForOwner(ownerId);
+        List<GetMadeOwnerCarsDTO> bookings = bookingService.getBookingsForOwner(ownerId);
+        return ResponseEntity.ok(CustomResponse.successResponse("Bookings fetched", HttpStatus.OK.value(), bookings));
+    }
+
+    @GetMapping("/client")
+    @PreAuthorize("hasAuthority('CLIENT')")
+    public ResponseEntity<CustomResponse<List<GetBookingsMadeByRenterDTO>>> getMyBookings(HttpServletRequest request) {
+        String renterId = jwtHandler.extractUserId(request.getHeader("Authorization").split(" ")[1]);
+
+        List<GetBookingsMadeByRenterDTO> bookings = bookingService.getBookingsMadeByRenter(renterId);
+
         return ResponseEntity.ok(CustomResponse.successResponse("Bookings fetched", HttpStatus.OK.value(), bookings));
     }
 
@@ -76,7 +83,7 @@ public class BookingController {
     }
 
     @PutMapping("/{bookingId}/return")
-    @PreAuthorize("hasAuthority('OWNER')") // or 'ADMIN' if only admins can do this
+    @PreAuthorize("hasAuthority('OWNER')")
     public ResponseEntity<CustomResponse<String>> markBookingAsReturned(
             @PathVariable String bookingId,
             HttpServletRequest request) {

@@ -6,6 +6,8 @@ import com.katros.autolinkbn.entities.Car;
 import com.katros.autolinkbn.entities.Rating;
 import com.katros.autolinkbn.exceptions.BadRequestException;
 import com.katros.autolinkbn.exceptions.NotFoundException;
+import com.katros.autolinkbn.exceptions.UnauthorizedException;
+import com.katros.autolinkbn.repositories.CarCustomRepository;
 import com.katros.autolinkbn.repositories.CarRepository;
 import com.katros.autolinkbn.services.customvalidations.FileValidationService;
 import org.springframework.data.domain.Page;
@@ -23,12 +25,15 @@ public class CarService {
 
     private final CarRepository carRepository;
 
+    private final CarCustomRepository carCustomRepository;
+
     private final CloudinaryService cloudinaryService;
 
     private final FileValidationService fileValidationService;
 
-    public CarService(CarRepository carRepository, CloudinaryService cloudinaryService, FileValidationService fileValidationService) {
+    public CarService(CarRepository carRepository, CarCustomRepository carCustomRepository, CloudinaryService cloudinaryService, FileValidationService fileValidationService) {
         this.carRepository = carRepository;
+        this.carCustomRepository = carCustomRepository;
         this.cloudinaryService = cloudinaryService;
         this.fileValidationService = fileValidationService;
     }
@@ -76,12 +81,8 @@ public class CarService {
         return carRepository.findAll(pageable);
     }
 
-    public Page<Car> getCarsByOwnerId(String ownerId, Pageable pageable) {
-        if (ownerId == null || ownerId.trim().isEmpty()) {
-            throw new BadRequestException("Owner ID must not be empty.");
-        }
-
-        return carRepository.findByOwnerId(ownerId, pageable);
+    public Page<Car> getCarsByOwnerWithFilters(String ownerId, Boolean forSale, Boolean forRent, String title, Pageable pageable) {
+        return carCustomRepository.findCarsWithFilters(ownerId, forSale, forRent, title, pageable);
     }
 
     public Page<Car> searchByTitle(String title, Pageable pageable) {
@@ -173,4 +174,18 @@ public class CarService {
     public Car save(Car car) {
         return carRepository.save(car);
     }
+
+    public void updateAvailability(String carId, String ownerId, boolean available) {
+        Car car = carRepository.findById(carId)
+                .orElseThrow(() -> new NotFoundException("Car not found with ID: " + carId));
+
+        if (!car.getOwnerId().equals(ownerId)) {
+            throw new UnauthorizedException("You are not authorized to modify this car.");
+        }
+
+        car.setAvailable(available);
+        car.setUpdatedAt(LocalDateTime.now());
+        carRepository.save(car);
+    }
+
 }

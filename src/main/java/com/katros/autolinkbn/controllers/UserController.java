@@ -15,7 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
-@RequestMapping("/api/v1/user")
+@RequestMapping("/api/v1/users")
 public class UserController {
 
     private final UserService userService;
@@ -55,7 +55,6 @@ public class UserController {
     }
 
     @GetMapping("/profile")
-    @PreAuthorize("hasAuthority('CLIENT')")
     public ResponseEntity<CustomResponse<UserProfileDTO>> getUserProfile() {
 
         String userId = jwtHandler.extractUserId(httpServletRequest.getHeader("Authorization").split(" ")[1]);
@@ -65,7 +64,6 @@ public class UserController {
     }
 
     @PutMapping("/profile")
-    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<CustomResponse<User>> updateUserProfile(
             @RequestBody User updatedUser,
             HttpServletRequest request) {

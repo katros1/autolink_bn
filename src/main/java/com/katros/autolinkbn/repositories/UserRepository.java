@@ -14,4 +14,6 @@ import java.util.Optional;
 public interface UserRepository extends MongoRepository<User, String> {
     Optional<User> findByEmail(String email);
     Page<User> findByRolesContaining(Role role, Pageable pageable);
+
+    long countByRoles(String role);
 }

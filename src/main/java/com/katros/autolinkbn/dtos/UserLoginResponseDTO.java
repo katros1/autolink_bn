@@ -19,6 +19,8 @@ public class UserLoginResponseDTO {
 
     private String email;
 
+    private String phoneNumber;
+
     private List<String> role;
 
     private String profilePicture;
