@@ -10,7 +10,7 @@ import java.util.List;
 @Repository
 public interface BookingRepository extends MongoRepository<Booking, String> {
     List<Booking> findByCarId(String carId);
-    List<Booking> findByRenterId(String renterId);
+    List<Booking> findByRenterIdOrderByCreatedAtDesc(String renterId);
     List<Booking> findByCarIdIn(List<String> carIds);
 
     long countByStatus(BookingStatus status);

@@ -110,7 +110,7 @@ public class BookingService {
     }
 
     public List<GetBookingsMadeByRenterDTO> getBookingsMadeByRenter(String renterId) {
-        List<Booking> bookings = bookingRepository.findByRenterId(renterId);
+        List<Booking> bookings = bookingRepository.findByRenterIdOrderByCreatedAtDesc(renterId);
 
         return bookings.stream().map(booking -> {
             Car car = carRepository.findById(booking.getCarId())
