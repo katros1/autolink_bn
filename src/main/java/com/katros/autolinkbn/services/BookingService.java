@@ -54,8 +54,8 @@ public class BookingService {
 
         bookingRepository.save(booking);
 
-        notificationService.sendPushNotificationToCarOwner(car.getOwnerId(),
-                "New booking request for your car: " + car.getTitle());
+//        notificationService.sendPushNotificationToCarOwner(car.getOwnerId(),
+//                "New booking request for your car: " + car.getTitle());
     }
 
     public void approveBooking(String bookingId) {
