@@ -2,6 +2,7 @@ package com.katros.autolinkbn.controllers;
 
 import com.katros.autolinkbn.dtos.UpdatePasswordDTO;
 import com.katros.autolinkbn.dtos.UserProfileDTO;
+import com.katros.autolinkbn.dtos.UserProfilePicResponseDTO;
 import com.katros.autolinkbn.entities.User;
 import com.katros.autolinkbn.services.UserService;
 import com.katros.autolinkbn.utils.CustomResponse;
@@ -42,16 +43,19 @@ public class UserController {
     }
 
     @PutMapping("/update-profile-picture")
-    public ResponseEntity<CustomResponse<String>> updateProfilePicture(
+    public ResponseEntity<CustomResponse<UserProfilePicResponseDTO>> updateProfilePicture(
             @RequestParam("file") MultipartFile profilePicture) {
 
         String userId = jwtHandler.extractUserId(httpServletRequest.getHeader("Authorization").split(" ")[1]);
 
-        userService.updateProfilePicture(userId, profilePicture);
+        User updatedUser = userService.updateProfilePicture(userId, profilePicture);
+        UserProfilePicResponseDTO responseDTO = new UserProfilePicResponseDTO(updatedUser.getProfilePicUrl());
 
         return ResponseEntity.ok(CustomResponse.successResponse(
                 "Profile picture updated successfully",
-                HttpStatus.OK.value()));
+                HttpStatus.OK.value(),
+                responseDTO
+        ));
     }
 
     @GetMapping("/profile")
