@@ -35,8 +35,8 @@ public class User {
     private String profilePicUrl;
     private String password;
 
-    private boolean isVerified=false;
-    private Status accountStatus = Status.ACTIVE;
+    private boolean isVerified;
+    private Status accountStatus;
 
     @CreatedDate
     @Field("created_at")

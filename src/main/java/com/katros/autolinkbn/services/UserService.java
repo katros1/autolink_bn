@@ -61,6 +61,9 @@ public class UserService {
         user.setDob(userRegistrationDTO.getDob());
         user.setGender(userRegistrationDTO.getGender());
         user.setCountry(userRegistrationDTO.getCountry());
+        user.setVerified(false);
+        user.setAccountStatus(Status.ACTIVE);
+
         user.setRoles(new HashSet<>(Collections.singleton(Role.CLIENT)));
 
         user.setPassword(passwordService.hashPassword(userRegistrationDTO.getPassword()));
