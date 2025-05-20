@@ -5,6 +5,7 @@ import com.katros.autolinkbn.dtos.RatingResponseDTO;
 import com.katros.autolinkbn.entities.Car;
 import com.katros.autolinkbn.entities.Rating;
 import com.katros.autolinkbn.exceptions.BadRequestException;
+import com.katros.autolinkbn.exceptions.ForbiddenException;
 import com.katros.autolinkbn.exceptions.NotFoundException;
 import com.katros.autolinkbn.exceptions.UnauthorizedException;
 import com.katros.autolinkbn.repositories.CarCustomRepository;
@@ -164,17 +165,64 @@ public class CarService {
         }
     }
 
-    public Car updateCar(String id, Car updatedCar) {
-        if (id == null || id.trim().isEmpty()) {
-            throw new BadRequestException("Car ID must not be empty.");
+    public Car updateCar(String carId, Car updatedCar, MultipartFile coverImage, List<MultipartFile> images) {
+        Car existingCar = carRepository.findById(carId)
+                .orElseThrow(() -> new NotFoundException("Car not found with id: " + carId));
+
+        if (!existingCar.getOwnerId().equals(updatedCar.getOwnerId())) {
+            throw new ForbiddenException("You do not have permission to update this car.");
         }
 
-        Car existing = getCarById(id);
-        updatedCar.setId(id);
-        updatedCar.setCreatedAt(existing.getCreatedAt());
-        updatedCar.setUpdatedAt(LocalDateTime.now());
-        return carRepository.save(updatedCar);
+        if (updatedCar.isForRent() && (updatedCar.getRentalPricePerDay() == null || updatedCar.getRentalPricePerDay().compareTo(BigDecimal.ZERO) <= 0)) {
+            throw new BadRequestException("Rental price must be provided and greater than zero when the car is for rent.");
+        }
+
+        if (updatedCar.isForSale() && (updatedCar.getSalePrice() == null || updatedCar.getSalePrice().compareTo(BigDecimal.ZERO) <= 0)) {
+            throw new BadRequestException("Sale price must be provided and greater than zero when the car is for sale.");
+        }
+
+        if (coverImage != null) {
+            fileValidationService.validateImageFile(coverImage);
+            String coverImageUrl = cloudinaryService.uploadImageFile(coverImage, updatedCar.getTitle() + "_cover_image");
+            existingCar.setCoverImageUrl(coverImageUrl);
+        }
+
+        if (images != null && !images.isEmpty()) {
+            List<String> imageUrls = new ArrayList<>();
+            for (MultipartFile image : images) {
+                fileValidationService.validateImageFile(image);
+                String url = cloudinaryService.uploadImageFile(image, updatedCar.getTitle());
+                imageUrls.add(url);
+            }
+            existingCar.setImageUrls(imageUrls);
+        }
+
+        // Update other fields
+        existingCar.setTitle(updatedCar.getTitle());
+        existingCar.setDescription(updatedCar.getDescription());
+        existingCar.setBrand(updatedCar.getBrand());
+        existingCar.setModel(updatedCar.getModel());
+        existingCar.setYear(updatedCar.getYear());
+        existingCar.setColor(updatedCar.getColor());
+        existingCar.setTransmission(updatedCar.getTransmission());
+        existingCar.setFuelType(updatedCar.getFuelType());
+        existingCar.setMileage(updatedCar.getMileage());
+        existingCar.setSeatCount(updatedCar.getSeatCount());
+        existingCar.setBodyType(updatedCar.getBodyType());
+        existingCar.setPlateNumber(updatedCar.getPlateNumber());
+        existingCar.setForRent(updatedCar.isForRent());
+        existingCar.setForSale(updatedCar.isForSale());
+        existingCar.setRentalPricePerDay(updatedCar.getRentalPricePerDay());
+        existingCar.setSalePrice(updatedCar.getSalePrice());
+        existingCar.setCity(updatedCar.getCity());
+        existingCar.setState(updatedCar.getState());
+        existingCar.setCountry(updatedCar.getCountry());
+        existingCar.setAddress(updatedCar.getAddress());
+        existingCar.setUpdatedAt(LocalDateTime.now());
+
+        return carRepository.save(existingCar);
     }
+
 
     public void deleteCar(String id) {
         if (!carRepository.existsById(id)) {

@@ -214,11 +214,64 @@ public class CarController {
     }
 
 
-    @PutMapping("/{id}")
-    public ResponseEntity<CustomResponse<Car>> updateCar(@PathVariable String id, @RequestBody Car car) {
-        Car updatedCar = carService.updateCar(id, car);
-        return ResponseEntity.ok(CustomResponse.successResponse("Car updated successfully", HttpStatus.OK.value(), updatedCar));
+    @PutMapping(value = "/{carId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAuthority('OWNER')")
+    public ResponseEntity<CustomResponse<Car>> updateCar(
+            @PathVariable String carId,
+            @RequestParam("title") String title,
+            @RequestParam("description") String description,
+            @RequestParam("brand") String brand,
+            @RequestParam("model") String model,
+            @RequestParam("year") int year,
+            @RequestParam("color") String color,
+            @RequestParam("transmission") String transmission,
+            @RequestParam("fuelType") String fuelType,
+            @RequestParam("mileage") int mileage,
+            @RequestParam("seatCount") int seatCount,
+            @RequestParam("bodyType") String bodyType,
+            @RequestParam("plateNumber") String plateNumber,
+            @RequestParam("forRent") boolean forRent,
+            @RequestParam("forSale") boolean forSale,
+            @RequestParam(required = false, name = "rentalPricePerDay") BigDecimal rentalPricePerDay,
+            @RequestParam(required = false, name = "salePrice") BigDecimal salePrice,
+            @RequestParam("city") String city,
+            @RequestParam("state") String state,
+            @RequestParam("country") String country,
+            @RequestParam("address") String address,
+            @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images,
+            HttpServletRequest request
+    ) {
+        String userId = jwtHandler.extractUserId(request.getHeader("Authorization").split(" ")[1]);
+
+        Car updatedCar = new Car();
+        updatedCar.setId(carId);
+        updatedCar.setTitle(title);
+        updatedCar.setDescription(description);
+        updatedCar.setBrand(brand);
+        updatedCar.setModel(model);
+        updatedCar.setYear(year);
+        updatedCar.setColor(color);
+        updatedCar.setTransmission(transmission);
+        updatedCar.setFuelType(fuelType);
+        updatedCar.setMileage(mileage);
+        updatedCar.setSeatCount(seatCount);
+        updatedCar.setBodyType(bodyType);
+        updatedCar.setPlateNumber(plateNumber);
+        updatedCar.setForRent(forRent);
+        updatedCar.setForSale(forSale);
+        updatedCar.setRentalPricePerDay(rentalPricePerDay);
+        updatedCar.setSalePrice(salePrice);
+        updatedCar.setCity(city);
+        updatedCar.setState(state);
+        updatedCar.setCountry(country);
+        updatedCar.setAddress(address);
+        updatedCar.setOwnerId(userId);
+
+        Car savedCar = carService.updateCar(carId, updatedCar, coverImage, images);
+        return ResponseEntity.ok(CustomResponse.successResponse("Car updated successfully", HttpStatus.OK.value(), savedCar));
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<CustomResponse<String>> deleteCar(@PathVariable String id) {
