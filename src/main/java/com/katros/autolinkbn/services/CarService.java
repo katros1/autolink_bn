@@ -81,6 +81,49 @@ public class CarService {
         return carRepository.findAll(pageable);
     }
 
+    public Page<Car> getFilteredCars(String title, String bodyType, Boolean forRent, Boolean forSale, Pageable pageable) {
+        // Handle all filter combinations
+        if (Boolean.TRUE.equals(forRent) && Boolean.TRUE.equals(forSale)) {
+            // Invalid or conflicting scenario, return empty or all?
+            return Page.empty(pageable);
+        }
+
+        if (Boolean.TRUE.equals(forRent)) {
+            if (title != null && bodyType != null) {
+                return carRepository.findByForRentTrueAndTitleContainingIgnoreCaseAndBodyTypeIgnoreCase(title, bodyType, pageable);
+            } else if (title != null) {
+                return carRepository.findByForRentTrueAndTitleContainingIgnoreCase(title, pageable);
+            } else if (bodyType != null) {
+                return carRepository.findByForRentTrueAndBodyTypeIgnoreCase(bodyType, pageable);
+            } else {
+                return carRepository.findByForRentTrue(pageable);
+            }
+        }
+
+        if (Boolean.TRUE.equals(forSale)) {
+            if (title != null && bodyType != null) {
+                return carRepository.findByForSaleTrueAndTitleContainingIgnoreCaseAndBodyTypeIgnoreCase(title, bodyType, pageable);
+            } else if (title != null) {
+                return carRepository.findByForSaleTrueAndTitleContainingIgnoreCase(title, pageable);
+            } else if (bodyType != null) {
+                return carRepository.findByForSaleTrueAndBodyTypeIgnoreCase(bodyType, pageable);
+            } else {
+                return carRepository.findByForSaleTrue(pageable);
+            }
+        }
+
+        // If neither forRent nor forSale is specified, apply title/bodyType filtering globally
+        if (title != null && bodyType != null) {
+            return carRepository.findByTitleContainingIgnoreCaseAndBodyTypeIgnoreCase(title, bodyType, pageable);
+        } else if (title != null) {
+            return carRepository.findByTitleContainingIgnoreCase(title, pageable);
+        } else if (bodyType != null) {
+            return carRepository.findByBodyTypeIgnoreCase(bodyType, pageable);
+        } else {
+            return carRepository.findAll(pageable);
+        }
+    }
+
     public Page<Car> getCarsByOwnerWithFilters(String ownerId, Boolean forSale, Boolean forRent, String title, Pageable pageable) {
         return carCustomRepository.findCarsWithFilters(ownerId, forSale, forRent, title, pageable);
     }

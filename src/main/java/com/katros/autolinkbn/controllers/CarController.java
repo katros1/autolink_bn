@@ -163,15 +163,8 @@ public class CarController {
             @RequestParam(defaultValue = "10") int size) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<Car> carPage;
 
-        if (Boolean.TRUE.equals(forRent)) {
-            carPage = carService.getRentalCarsFiltered(title, bodyType, pageable);
-        } else if (Boolean.TRUE.equals(forSale)) {
-            carPage = carService.getSalesCarsFiltered(title, bodyType, pageable);
-        } else {
-            carPage = carService.getAllCars(pageable); // optional fallback
-        }
+        Page<Car> carPage = carService.getFilteredCars(title, bodyType, forRent, forSale, pageable);
 
         List<CarResponseDTO> carDTOs = carPage.getContent().stream()
                 .map(carMapper::toDto)
@@ -186,6 +179,7 @@ public class CarController {
 
         return ResponseEntity.ok(CustomResponse.successResponse("Cars fetched", HttpStatus.OK.value(), response));
     }
+
 
     @GetMapping("/owner/filtered")
     @PreAuthorize("hasAuthority('OWNER')")
