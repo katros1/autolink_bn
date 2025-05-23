@@ -7,6 +7,8 @@ import com.katros.autolinkbn.repositories.CarRepository;
 import com.katros.autolinkbn.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+
 @Service
 public class AdminDashboardService {
 
@@ -30,7 +32,9 @@ public class AdminDashboardService {
         long carsForSale = carRepository.countByForSaleTrue();
 
         long totalBookings = bookingRepository.count();
-        long successfulBookings = bookingRepository.countByStatus(BookingStatus.APPROVED);
+        long approved = bookingRepository.countByStatus(BookingStatus.APPROVED);
+        long returned = bookingRepository.countByStatus(BookingStatus.RETURNED);
+        long successfulBookings = approved + returned;
         long pendingBookings = bookingRepository.countByStatus(BookingStatus.PENDING);
         long rejectedBookings = bookingRepository.countByStatus(BookingStatus.REJECTED);
         long canceledBookings = bookingRepository.countByStatus(BookingStatus.CANCELLED);
